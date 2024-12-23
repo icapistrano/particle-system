@@ -8,7 +8,7 @@ import {
   ShaderMaterial,
   Vector3,
 } from "three";
-import smoke from "../assets/smoke_01.png";
+import smoke from "../../assets/smoke_01.png";
 import fragmentShader from "./fragment.glsl";
 import vertexShader from "./vertex.glsl";
 import { useControls } from "leva";
@@ -21,7 +21,7 @@ type Particle = {
   angle: number;
 };
 
-export const SmokeParticles: FunctionComponent<{
+export const SmokeTrail: FunctionComponent<{
   origin: Vector3;
   minLifetime?: number;
   maxLifetime?: number;

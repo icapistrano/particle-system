@@ -1,27 +1,35 @@
-import { useThree } from "@react-three/fiber";
 import "./App.css";
-import { PerspectiveCamera, Plane } from "@react-three/drei";
-import { SmokeParticles } from "./components/SmokeParticles";
-import { useRef } from "react";
+import { FunctionComponent, useRef } from "react";
+import { Canvas } from "@react-three/fiber";
+import { PerspectiveCamera } from "@react-three/drei";
 import { Vector3 } from "three";
+import { BrowserRouter, Routes, Route } from "react-router";
+import { SmokeTrail } from "./views/SmokeTrail/SmokeTrail";
+import { Traction } from "./views/Traction/Traction";
+import { MouseHandler } from "./components/MouseHandler";
 
-function App() {
-  const spherePositionRef = useRef(new Vector3());
-  const viewport = useThree((state) => state.viewport);
+const App: FunctionComponent = () => {
+  const mousePositionRef = useRef(new Vector3());
 
   return (
-    <group>
-      <Plane
-        args={[viewport.width, viewport.height, 1]}
-        onPointerMove={(e) => {
-          spherePositionRef.current.copy(e.point);
-        }}
-        visible={false}
-      ></Plane>
+    <Canvas>
       <PerspectiveCamera makeDefault position={[0, 0, 10]} />
-      <SmokeParticles origin={spherePositionRef.current} />
-    </group>
+      <MouseHandler mousePositionRef={mousePositionRef} />
+
+      <BrowserRouter>
+        <Routes>
+          <Route
+            path="/"
+            element={<SmokeTrail origin={mousePositionRef.current} />}
+          />
+          <Route
+            path="/traction"
+            element={<Traction origin={mousePositionRef.current} />}
+          />
+        </Routes>
+      </BrowserRouter>
+    </Canvas>
   );
-}
+};
 
 export default App;
