@@ -10,20 +10,21 @@ import {
 import vertexShader from "./vertex.glsl";
 import fragmentShader from "./fragment.glsl";
 import { useControls } from "leva";
+import { MouseHandler } from "../../components/MouseHandler";
 
 type Particle = {
   position: Vector3;
   velocity: Vector3;
 };
 
-export const Traction: FunctionComponent<{
-  origin: Vector3;
-}> = ({ origin }) => {
+export const Traction: FunctionComponent = () => {
   const { radius, nearColor, farColor } = useControls({
     radius: { value: 1, min: 1, max: 3, step: 1 },
     nearColor: "#ffb600",
     farColor: "#0000ff",
   });
+
+  const mousePositionRef = useRef(new Vector3());
 
   const particleCount = 5000;
 
@@ -69,9 +70,9 @@ export const Traction: FunctionComponent<{
     for (let i = 0; i < particleCount; i++) {
       const particle = particles[i];
 
-      const distance = particle.position.distanceTo(origin);
+      const distance = particle.position.distanceTo(mousePositionRef.current);
       const direction = dirRef.current
-        .copy(origin)
+        .copy(mousePositionRef.current)
         .sub(particle.position)
         .normalize();
 
@@ -101,28 +102,32 @@ export const Traction: FunctionComponent<{
   });
 
   return (
-    <points ref={particleRef}>
-      <bufferGeometry>
-        <bufferAttribute
-          attach={"attributes-position"}
-          array={positionRef.current}
-          itemSize={3}
-          count={particleCount}
+    <group>
+      <MouseHandler mousePositionRef={mousePositionRef} />
+
+      <points ref={particleRef}>
+        <bufferGeometry>
+          <bufferAttribute
+            attach={"attributes-position"}
+            array={positionRef.current}
+            itemSize={3}
+            count={particleCount}
+          />
+          <bufferAttribute
+            attach={"attributes-color"}
+            array={colorRef.current}
+            itemSize={1}
+            count={particleCount}
+          />
+        </bufferGeometry>
+        <shaderMaterial
+          ref={materialRef}
+          blending={AdditiveBlending}
+          uniforms={uniforms}
+          fragmentShader={fragmentShader}
+          vertexShader={vertexShader}
         />
-        <bufferAttribute
-          attach={"attributes-color"}
-          array={colorRef.current}
-          itemSize={1}
-          count={particleCount}
-        />
-      </bufferGeometry>
-      <shaderMaterial
-        ref={materialRef}
-        blending={AdditiveBlending}
-        uniforms={uniforms}
-        fragmentShader={fragmentShader}
-        vertexShader={vertexShader}
-      />
-    </points>
+      </points>
+    </group>
   );
 };

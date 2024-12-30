@@ -12,6 +12,7 @@ import smoke from "../../assets/smoke_01.png";
 import fragmentShader from "./fragment.glsl";
 import vertexShader from "./vertex.glsl";
 import { useControls } from "leva";
+import { MouseHandler } from "../../components/MouseHandler";
 
 type Particle = {
   position: Vector3;
@@ -22,15 +23,16 @@ type Particle = {
 };
 
 export const SmokeTrail: FunctionComponent<{
-  origin: Vector3;
   minLifetime?: number;
   maxLifetime?: number;
-}> = ({ origin, minLifetime = 1, maxLifetime = 2 }) => {
+}> = ({ minLifetime = 1, maxLifetime = 1.5 }) => {
   const { speed, startColor, endColor } = useControls({
     speed: { value: 1, min: 0, max: 1, step: 0.1 },
     startColor: "#ff00ff",
     endColor: "#363bff",
   });
+
+  const mousePositionRef = useRef(new Vector3());
 
   const particleRef = useRef<Points>(null);
   const materialRef = useRef<ShaderMaterial>(null);
@@ -47,14 +49,14 @@ export const SmokeTrail: FunctionComponent<{
     const data: Particle[] = [];
     for (let i = 0; i < particleCount; i++) {
       data.push({
-        position: new Vector3().copy(origin),
+        position: new Vector3().copy(mousePositionRef.current),
         velocity: new Vector3(
           (Math.random() - 0.5) * speed,
           (Math.random() - 0.5) * speed,
           (Math.random() - 0.5) * speed,
         ),
         lifetime: Math.random() * maxLifetime + minLifetime,
-        scale: Math.random() * 2 + 1,
+        scale: Math.random() * 1 + 0.5,
         angle: Math.random() * Math.PI * 2,
       });
     }
@@ -85,7 +87,7 @@ export const SmokeTrail: FunctionComponent<{
       const particle = particles[i];
 
       if (particle.lifetime <= 0) {
-        particle.position.copy(origin);
+        particle.position.copy(mousePositionRef.current);
 
         particle.velocity.set(
           (Math.random() - 0.5) * speed,
@@ -115,43 +117,47 @@ export const SmokeTrail: FunctionComponent<{
   });
 
   return (
-    <points ref={particleRef}>
-      <bufferGeometry>
-        <bufferAttribute
-          attach={"attributes-position"}
-          array={positionRef.current}
-          itemSize={3}
-          count={particleCount}
-        />
-        <bufferAttribute
-          attach={"attributes-alpha"}
-          array={alphaRef.current}
-          itemSize={1}
-          count={particleCount}
-        />
-        <bufferAttribute
-          attach={"attributes-scale"}
-          array={scaleRef.current}
-          itemSize={1}
-          count={particleCount}
-        />
-        <bufferAttribute
-          attach={"attributes-angle"}
-          array={angleRef.current}
-          itemSize={1}
-          count={particleCount}
-        />
-      </bufferGeometry>
+    <group>
+      <MouseHandler mousePositionRef={mousePositionRef} />
 
-      <shaderMaterial
-        ref={materialRef}
-        blending={AdditiveBlending}
-        depthTest={false}
-        transparent
-        uniforms={uniforms}
-        vertexShader={vertexShader}
-        fragmentShader={fragmentShader}
-      />
-    </points>
+      <points ref={particleRef}>
+        <bufferGeometry>
+          <bufferAttribute
+            attach={"attributes-position"}
+            array={positionRef.current}
+            itemSize={3}
+            count={particleCount}
+          />
+          <bufferAttribute
+            attach={"attributes-alpha"}
+            array={alphaRef.current}
+            itemSize={1}
+            count={particleCount}
+          />
+          <bufferAttribute
+            attach={"attributes-scale"}
+            array={scaleRef.current}
+            itemSize={1}
+            count={particleCount}
+          />
+          <bufferAttribute
+            attach={"attributes-angle"}
+            array={angleRef.current}
+            itemSize={1}
+            count={particleCount}
+          />
+        </bufferGeometry>
+
+        <shaderMaterial
+          ref={materialRef}
+          blending={AdditiveBlending}
+          depthTest={false}
+          transparent
+          uniforms={uniforms}
+          vertexShader={vertexShader}
+          fragmentShader={fragmentShader}
+        />
+      </points>
+    </group>
   );
 };

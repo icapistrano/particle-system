@@ -1,34 +1,30 @@
 import "./App.css";
-import { FunctionComponent, useRef } from "react";
+import { FunctionComponent } from "react";
 import { Canvas } from "@react-three/fiber";
 import { PerspectiveCamera } from "@react-three/drei";
-import { Vector3 } from "three";
-import { BrowserRouter, Routes, Route } from "react-router";
-import { SmokeTrail } from "./views/SmokeTrail/SmokeTrail";
-import { Traction } from "./views/Traction/Traction";
-import { MouseHandler } from "./components/MouseHandler";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router";
+import { Sidebar } from "./components/Sidebar";
+import { AppRoutes } from "./routes/AppRoutes";
 
 const App: FunctionComponent = () => {
-  const mousePositionRef = useRef(new Vector3());
-
   return (
-    <Canvas>
-      <PerspectiveCamera makeDefault position={[0, 0, 10]} />
-      <MouseHandler mousePositionRef={mousePositionRef} />
-
+    <div className="w-screen h-screen">
       <BrowserRouter>
-        <Routes>
-          <Route
-            path="/"
-            element={<SmokeTrail origin={mousePositionRef.current} />}
-          />
-          <Route
-            path="/traction"
-            element={<Traction origin={mousePositionRef.current} />}
-          />
-        </Routes>
+        <Sidebar />
+        <Canvas className="cursor-crosshair bg-dark">
+          <PerspectiveCamera makeDefault position={[0, 0, 10]} />
+
+          <Routes>
+            {AppRoutes.map(({ path, component: Component }) => (
+              <Route key={path} path={path} element={<Component />} />
+            ))}
+
+            {/* Fallback route (catch-all) */}
+            <Route path="*" element={<Navigate to="/traction" />} />
+          </Routes>
+        </Canvas>
       </BrowserRouter>
-    </Canvas>
+    </div>
   );
 };
 
