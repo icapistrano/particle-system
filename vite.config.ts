@@ -4,5 +4,6 @@ import string from "vite-plugin-string";
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  base: "/particle-system/",
   plugins: [react(), string()],
 });
