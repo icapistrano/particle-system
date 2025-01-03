@@ -1,5 +1,5 @@
-import { useTexture } from "@react-three/drei";
-import { useFrame } from "@react-three/fiber";
+import { PerspectiveCamera, useTexture } from "@react-three/drei";
+import { Canvas, useFrame } from "@react-three/fiber";
 import { FunctionComponent, useEffect, useMemo, useRef } from "react";
 import {
   AdditiveBlending,
@@ -22,34 +22,62 @@ type Particle = {
   angle: number;
 };
 
-export const SmokeTrail: FunctionComponent<{
-  minLifetime?: number;
-  maxLifetime?: number;
-}> = ({ minLifetime = 1, maxLifetime = 1.5 }) => {
+const SmokeTrailScene: FunctionComponent = () => {
   const { speed, startColor, endColor } = useControls({
     speed: { value: 1, min: 0, max: 1, step: 0.1 },
     startColor: "#ff00ff",
     endColor: "#363bff",
   });
 
-  const mousePositionRef = useRef(new Vector3());
+  const mousePositionRef = useRef<Vector3>(new Vector3());
 
+  return (
+    <Canvas className="cursor-crosshair bg-dark">
+      <PerspectiveCamera makeDefault position={[0, 0, 10]} />
+      <MouseHandler mousePositionRef={mousePositionRef} />
+
+      <Particles
+        speed={speed}
+        startColor={startColor}
+        endColor={endColor}
+        mousePos={mousePositionRef.current}
+      />
+    </Canvas>
+  );
+};
+
+const Particles: FunctionComponent<{
+  speed: number;
+  startColor: string;
+  endColor: string;
+  mousePos: Vector3;
+  minLifetime?: number;
+  maxLifetime?: number;
+  particleCount?: number;
+}> = ({
+  speed,
+  startColor,
+  endColor,
+  mousePos,
+  minLifetime = 1,
+  maxLifetime = 1.5,
+  particleCount = 5000,
+}) => {
   const particleRef = useRef<Points>(null);
   const materialRef = useRef<ShaderMaterial>(null);
-
-  const particleCount = 5000;
-  const smokeTexture = useTexture(smoke);
 
   const positionRef = useRef(new Float32Array(particleCount * 3));
   const scaleRef = useRef(new Float32Array(particleCount));
   const alphaRef = useRef(new Float32Array(particleCount));
   const angleRef = useRef(new Float32Array(particleCount));
 
+  const smokeTexture = useTexture(smoke);
+
   const particles = useMemo(() => {
     const data: Particle[] = [];
     for (let i = 0; i < particleCount; i++) {
       data.push({
-        position: new Vector3().copy(mousePositionRef.current),
+        position: new Vector3().copy(mousePos),
         velocity: new Vector3(
           (Math.random() - 0.5) * speed,
           (Math.random() - 0.5) * speed,
@@ -87,7 +115,7 @@ export const SmokeTrail: FunctionComponent<{
       const particle = particles[i];
 
       if (particle.lifetime <= 0) {
-        particle.position.copy(mousePositionRef.current);
+        particle.position.copy(mousePos);
 
         particle.velocity.set(
           (Math.random() - 0.5) * speed,
@@ -117,47 +145,45 @@ export const SmokeTrail: FunctionComponent<{
   });
 
   return (
-    <group>
-      <MouseHandler mousePositionRef={mousePositionRef} />
-
-      <points ref={particleRef}>
-        <bufferGeometry>
-          <bufferAttribute
-            attach={"attributes-position"}
-            array={positionRef.current}
-            itemSize={3}
-            count={particleCount}
-          />
-          <bufferAttribute
-            attach={"attributes-alpha"}
-            array={alphaRef.current}
-            itemSize={1}
-            count={particleCount}
-          />
-          <bufferAttribute
-            attach={"attributes-scale"}
-            array={scaleRef.current}
-            itemSize={1}
-            count={particleCount}
-          />
-          <bufferAttribute
-            attach={"attributes-angle"}
-            array={angleRef.current}
-            itemSize={1}
-            count={particleCount}
-          />
-        </bufferGeometry>
-
-        <shaderMaterial
-          ref={materialRef}
-          blending={AdditiveBlending}
-          depthTest={false}
-          transparent
-          uniforms={uniforms}
-          vertexShader={vertexShader}
-          fragmentShader={fragmentShader}
+    <points ref={particleRef}>
+      <bufferGeometry>
+        <bufferAttribute
+          attach={"attributes-position"}
+          array={positionRef.current}
+          itemSize={3}
+          count={particleCount}
         />
-      </points>
-    </group>
+        <bufferAttribute
+          attach={"attributes-alpha"}
+          array={alphaRef.current}
+          itemSize={1}
+          count={particleCount}
+        />
+        <bufferAttribute
+          attach={"attributes-scale"}
+          array={scaleRef.current}
+          itemSize={1}
+          count={particleCount}
+        />
+        <bufferAttribute
+          attach={"attributes-angle"}
+          array={angleRef.current}
+          itemSize={1}
+          count={particleCount}
+        />
+      </bufferGeometry>
+
+      <shaderMaterial
+        ref={materialRef}
+        blending={AdditiveBlending}
+        depthTest={false}
+        transparent
+        uniforms={uniforms}
+        vertexShader={vertexShader}
+        fragmentShader={fragmentShader}
+      />
+    </points>
   );
 };
+
+export default SmokeTrailScene;

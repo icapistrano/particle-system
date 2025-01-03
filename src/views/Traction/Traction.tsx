@@ -1,4 +1,4 @@
-import { useFrame } from "@react-three/fiber";
+import { Canvas, useFrame } from "@react-three/fiber";
 import { FunctionComponent, useEffect, useMemo, useRef } from "react";
 import {
   Points,
@@ -11,23 +11,44 @@ import vertexShader from "./vertex.glsl";
 import fragmentShader from "./fragment.glsl";
 import { useControls } from "leva";
 import { MouseHandler } from "../../components/MouseHandler";
+import { PerspectiveCamera } from "@react-three/drei";
 
 type Particle = {
   position: Vector3;
   velocity: Vector3;
 };
 
-export const Traction: FunctionComponent = () => {
+const TractionScene: FunctionComponent = () => {
   const { radius, nearColor, farColor } = useControls({
     radius: { value: 1, min: 1, max: 3, step: 1 },
     nearColor: "#ffb600",
     farColor: "#0000ff",
   });
 
-  const mousePositionRef = useRef(new Vector3());
+  const mousePositionRef = useRef<Vector3>(new Vector3());
 
-  const particleCount = 5000;
+  return (
+    <Canvas className="cursor-crosshair bg-dark">
+      <PerspectiveCamera makeDefault position={[0, 0, 10]} />
+      <MouseHandler mousePositionRef={mousePositionRef} />
 
+      <Particles
+        radius={radius}
+        nearColor={nearColor}
+        farColor={farColor}
+        mousePos={mousePositionRef.current}
+      />
+    </Canvas>
+  );
+};
+
+const Particles: FunctionComponent<{
+  radius: number;
+  nearColor: string;
+  farColor: string;
+  mousePos: Vector3;
+  particleCount?: number;
+}> = ({ radius, nearColor, farColor, mousePos, particleCount = 5000 }) => {
   const particleRef = useRef<Points>(null);
   const materialRef = useRef<ShaderMaterial>(null);
 
@@ -70,9 +91,9 @@ export const Traction: FunctionComponent = () => {
     for (let i = 0; i < particleCount; i++) {
       const particle = particles[i];
 
-      const distance = particle.position.distanceTo(mousePositionRef.current);
+      const distance = particle.position.distanceTo(mousePos);
       const direction = dirRef.current
-        .copy(mousePositionRef.current)
+        .copy(mousePos)
         .sub(particle.position)
         .normalize();
 
@@ -102,32 +123,30 @@ export const Traction: FunctionComponent = () => {
   });
 
   return (
-    <group>
-      <MouseHandler mousePositionRef={mousePositionRef} />
-
-      <points ref={particleRef}>
-        <bufferGeometry>
-          <bufferAttribute
-            attach={"attributes-position"}
-            array={positionRef.current}
-            itemSize={3}
-            count={particleCount}
-          />
-          <bufferAttribute
-            attach={"attributes-color"}
-            array={colorRef.current}
-            itemSize={1}
-            count={particleCount}
-          />
-        </bufferGeometry>
-        <shaderMaterial
-          ref={materialRef}
-          blending={AdditiveBlending}
-          uniforms={uniforms}
-          fragmentShader={fragmentShader}
-          vertexShader={vertexShader}
+    <points ref={particleRef}>
+      <bufferGeometry>
+        <bufferAttribute
+          attach={"attributes-position"}
+          array={positionRef.current}
+          itemSize={3}
+          count={particleCount}
         />
-      </points>
-    </group>
+        <bufferAttribute
+          attach={"attributes-color"}
+          array={colorRef.current}
+          itemSize={1}
+          count={particleCount}
+        />
+      </bufferGeometry>
+      <shaderMaterial
+        ref={materialRef}
+        blending={AdditiveBlending}
+        uniforms={uniforms}
+        fragmentShader={fragmentShader}
+        vertexShader={vertexShader}
+      />
+    </points>
   );
 };
+
+export default TractionScene;

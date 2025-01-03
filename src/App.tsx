@@ -1,28 +1,19 @@
 import "./App.css";
 import { FunctionComponent } from "react";
-import { Canvas } from "@react-three/fiber";
-import { PerspectiveCamera } from "@react-three/drei";
 import { HashRouter, Routes, Route, Navigate } from "react-router";
-import { Sidebar } from "./components/Sidebar";
 import { AppRoutes } from "./routes/AppRoutes";
 
 const App: FunctionComponent = () => {
   return (
     <div className="w-screen h-screen">
       <HashRouter basename="/">
-        <Sidebar />
-        <Canvas className="cursor-crosshair bg-dark">
-          <PerspectiveCamera makeDefault position={[0, 0, 10]} />
+        <Routes>
+          {AppRoutes.map(({ path, component: Component }) => (
+            <Route key={path} path={path} element={<Component />} />
+          ))}
 
-          <Routes>
-            {AppRoutes.map(({ path, component: Component }) => (
-              <Route key={path} path={path} element={<Component />} />
-            ))}
-
-            {/* Fallback route (catch-all) */}
-            <Route path="*" element={<Navigate to="/traction" />} />
-          </Routes>
-        </Canvas>
+          <Route path="*" element={<Navigate to="/" />} />
+        </Routes>
       </HashRouter>
     </div>
   );
