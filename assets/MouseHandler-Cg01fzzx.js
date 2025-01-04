@@ -1,4 +1,4 @@
-import{r as Le,g as n_,j as di}from"./index-D2MUXnTG.js";/**
+import{r as Le,g as n_,j as di}from"./index-BdiIvnIE.js";/**
  * @license
  * Copyright 2010-2024 Three.js Authors
  * SPDX-License-Identifier: MIT
