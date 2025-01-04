@@ -39,11 +39,15 @@ const Particles: FunctionComponent<{
   mousePos: Vector3;
   distanceThreshold?: number;
   sphereRad?: number;
+  minSize?: number;
+  maxSize?: number;
   particleCount?: number;
 }> = ({
   mousePos,
   distanceThreshold = 2.5,
   sphereRad = 2,
+  minSize = 30,
+  maxSize = 200,
   particleCount = 3000,
 }) => {
   const dirRef = useRef(new Vector3());
@@ -68,11 +72,11 @@ const Particles: FunctionComponent<{
         originalPosition: new Vector3(x, y, z),
         position: new Vector3(x, y, z),
         velocity: new Vector3(),
-        scale: 1,
+        scale: minSize,
         color: new Vector3().fromArray(pickRGB()),
       };
     });
-  }, [particleCount, sphereRad]);
+  }, [particleCount, sphereRad, minSize]);
 
   const updateParticle = (particle: Particle, delta: number) => {
     const distance = particle.position.distanceTo(mousePos);
@@ -88,13 +92,19 @@ const Particles: FunctionComponent<{
       dirRef.current.normalize();
       const strength = Math.max(0.2, 1 - distance / 3);
       particle.velocity.addScaledVector(dirRef.current, strength * delta);
-      particle.scale = Math.min(200, particle.scale + Math.log(distance * 1.5));
+      particle.scale = Math.min(
+        maxSize,
+        particle.scale + Math.log(distance * 1.5),
+      );
     } else {
       // Return to origin
       dirRef.current.subVectors(particle.originalPosition, particle.position);
       particle.velocity.addScaledVector(dirRef.current, delta);
       particle.velocity.multiplyScalar(0.95);
-      particle.scale = Math.max(1, particle.scale - Math.log(particle.scale));
+      particle.scale = Math.max(
+        minSize,
+        particle.scale - Math.log(particle.scale),
+      );
     }
 
     particle.position.add(particle.velocity);
@@ -151,6 +161,9 @@ const Particles: FunctionComponent<{
         ref={materialRef}
         fragmentShader={fragmentShader}
         vertexShader={vertexShader}
+        uniforms={{
+          maxSize: { value: maxSize },
+        }}
       />
     </points>
   );
