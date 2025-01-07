@@ -61,15 +61,15 @@ const Particles: FunctionComponent<{
     for (let i = 0; i < particleCount; i++) {
       data.push({
         position: new Vector3(
-          Math.random() * 15 - 7.5,
-          Math.random() * 10 - 5,
+          Math.random() * 20 - 10,
+          Math.random() * 20 - 10,
           0,
         ),
         velocity: new Vector3(Math.random() * 0.5, Math.random() * 0.5, 0),
       });
     }
     return data;
-  }, []);
+  }, [particleCount]);
 
   const uniforms = useMemo(() => {
     return {

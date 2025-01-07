@@ -90,7 +90,7 @@ const Particles: FunctionComponent<{
     }
 
     return data;
-  }, [speed, minLifetime, maxLifetime]);
+  }, [particleCount, speed, minLifetime, maxLifetime]);
 
   const uniforms = useMemo(() => {
     return {
