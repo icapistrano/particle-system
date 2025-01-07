@@ -32,7 +32,7 @@ const SmokeTrailScene: FunctionComponent = () => {
   const mousePositionRef = useRef<Vector3>(new Vector3());
 
   return (
-    <Canvas className="cursor-crosshair bg-dark">
+    <Canvas className="cursor-crosshair bg-dark pointer-events-none">
       <PerspectiveCamera makeDefault position={[0, 0, 10]} />
       <MouseHandler mousePositionRef={mousePositionRef} />
 
