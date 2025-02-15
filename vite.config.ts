@@ -6,4 +6,7 @@ import string from "vite-plugin-string";
 export default defineConfig({
   base: "/particle-system/",
   plugins: [react(), string()],
+  build: {
+    outDir: "docs" // GitHub Pages will serve from here
+  }
 });
